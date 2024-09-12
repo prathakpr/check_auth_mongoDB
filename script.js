@@ -71,6 +71,26 @@ app.post('/api/signup', async (req, res)=>{
     }
 });
 
+// Route for Login
+app.post('/api/login', async (req, res)=>{
+    try {
+        const userProvided = await user.findOne({email : req.body.email});
+        if(!userProvided) return res.status(401).send("Invalid credentials"); 
+
+        //comparing password
+        const passwordMatch = bcryptjs.compare( req.body.password , userProvided.password);
+        if(!passwordMatch) return res.status(401).send("Invalid credentials");
+
+        // generating Json web token for further use
+        const token = jwt.sign({ email: user.email }, 'pulkits secret');
+        res.status(200).json({ token });
+    } catch(err){
+        res.status(500).send("Internal server error");
+    }
+});
+
+
+
 // Start the server
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);

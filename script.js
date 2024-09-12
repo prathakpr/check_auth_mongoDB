@@ -82,13 +82,26 @@ app.post('/api/login', async (req, res)=>{
         if(!passwordMatch) return res.status(401).send("Invalid credentials");
 
         // generating Json web token for further use
-        const token = jwt.sign({ email: user.email }, 'pulkits secret');
+        const token = jwt.sign({ email: userProvided.email }, 'pulkits secret',  { expiresIn: '1m' } ); //changed to expire in 1 minute
         res.status(200).json({ token });
     } catch(err){
         res.status(500).send("Internal server error");
     }
 });
 
+// route for geting an api when you are authorized user
+app.get('/api/get', verifyToken, async (req, res)=>{
+    try {
+        // Fetched user details using decoded token
+
+        const userProvided = await user.findOne({ email: req.user.email });
+        if(!userProvided) return res.status(401).send("Unauthorized");
+
+        res.status(200).json({ username: userProvided.username, email: userProvided.email });
+    }catch (err) {
+        res.status(500).send("Internal server error");
+      }
+});
 
 
 // Start the server
